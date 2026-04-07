@@ -1,28 +1,5 @@
 package com.logistics.authentication.application.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.logistics.authentication.application.port.in.LoginUseCase.LoginResult;
 import com.logistics.authentication.application.port.in.RefreshTokenUseCase.RefreshCommand;
 import com.logistics.authentication.application.port.out.JwtTokenProviderPort;
@@ -32,6 +9,24 @@ import com.logistics.authentication.application.port.out.RefreshTokenRepositoryP
 import com.logistics.authentication.application.port.out.UserRepositoryPort;
 import com.logistics.authentication.domain.exception.AuthenticationDomainException;
 import com.logistics.authentication.domain.model.UserAccount;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RefreshTokenServiceTest {
@@ -107,7 +102,9 @@ class RefreshTokenServiceTest {
 
     @Test
     void refreshWithNullToken_throwsInvalidRefresh() {
-        assertThatThrownBy(() -> service.refresh(new RefreshCommand(null)))
+        RefreshCommand command = new RefreshCommand(null);
+
+        assertThatThrownBy(() -> service.refresh(command))
                 .isInstanceOf(AuthenticationDomainException.class)
                 .satisfies(ex -> {
                     AuthenticationDomainException ade = (AuthenticationDomainException) ex;
@@ -117,7 +114,8 @@ class RefreshTokenServiceTest {
 
     @Test
     void refreshWithBlankToken_throwsInvalidRefresh() {
-        assertThatThrownBy(() -> service.refresh(new RefreshCommand("   ")))
+        RefreshCommand command = new RefreshCommand("  ");
+        assertThatThrownBy(() -> service.refresh(command))
                 .isInstanceOf(AuthenticationDomainException.class)
                 .satisfies(ex -> {
                     AuthenticationDomainException ade = (AuthenticationDomainException) ex;
@@ -132,7 +130,8 @@ class RefreshTokenServiceTest {
         when(refreshTokens.findActiveByTokenHash("unknown-hash", NOW))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.refresh(new RefreshCommand("unknown-token")))
+        RefreshCommand command = new RefreshCommand("unknown-token");
+        assertThatThrownBy(() -> service.refresh(command))
                 .isInstanceOf(AuthenticationDomainException.class)
                 .satisfies(ex -> {
                     AuthenticationDomainException ade = (AuthenticationDomainException) ex;
@@ -159,7 +158,9 @@ class RefreshTokenServiceTest {
                 .thenReturn(Optional.of(new RefreshTokenActive(TOKEN_ID, USER_ID)));
         when(users.findById(USER_ID)).thenReturn(Optional.of(disabledUser));
 
-        assertThatThrownBy(() -> service.refresh(new RefreshCommand(RAW_TOKEN)))
+        RefreshCommand command = new RefreshCommand(RAW_TOKEN);
+
+        assertThatThrownBy(() -> service.refresh(command))
                 .isInstanceOf(AuthenticationDomainException.class)
                 .satisfies(ex -> {
                     AuthenticationDomainException ade = (AuthenticationDomainException) ex;
@@ -186,7 +187,9 @@ class RefreshTokenServiceTest {
                 .thenReturn(Optional.of(new RefreshTokenActive(TOKEN_ID, USER_ID)));
         when(users.findById(USER_ID)).thenReturn(Optional.of(lockedUser));
 
-        assertThatThrownBy(() -> service.refresh(new RefreshCommand(RAW_TOKEN)))
+        RefreshCommand command = new RefreshCommand(RAW_TOKEN);
+
+        assertThatThrownBy(() -> service.refresh(command))
                 .isInstanceOf(AuthenticationDomainException.class)
                 .satisfies(ex -> {
                     AuthenticationDomainException ade = (AuthenticationDomainException) ex;

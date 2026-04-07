@@ -20,9 +20,10 @@ class TraceIdFilterTest {
         filter.doFilterInternal(request, response, chain);
 
         String traceId = response.getHeader(TraceIdFilter.TRACE_ID_HEADER);
-        assertThat(traceId).isNotNull().isNotBlank();
-        // Should be a UUID format
-        assertThat(traceId).matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
+        assertThat(traceId)
+                .isNotNull()
+                .isNotBlank()
+                .matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
     }
 
     @Test
@@ -50,6 +51,6 @@ class TraceIdFilterTest {
 
         String traceId = response.getHeader(TraceIdFilter.TRACE_ID_HEADER);
         assertThat(traceId).isNotBlank();
-        assertThat(traceId.trim()).isNotEqualTo("");
+        assertThat(traceId.trim()).isNotBlank();
     }
 }

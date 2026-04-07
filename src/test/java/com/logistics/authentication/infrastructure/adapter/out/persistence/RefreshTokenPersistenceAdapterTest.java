@@ -1,11 +1,8 @@
 package com.logistics.authentication.infrastructure.adapter.out.persistence;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.Optional;
-import java.util.UUID;
-
+import com.logistics.authentication.application.port.out.RefreshTokenRepositoryPort.RefreshTokenActive;
+import com.logistics.authentication.infrastructure.adapter.out.persistence.entity.RefreshTokenEntity;
+import com.logistics.authentication.infrastructure.adapter.out.persistence.repository.RefreshTokenJpaRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -13,12 +10,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.logistics.authentication.application.port.out.RefreshTokenRepositoryPort.RefreshTokenActive;
-import com.logistics.authentication.infrastructure.adapter.out.persistence.entity.RefreshTokenEntity;
-import com.logistics.authentication.infrastructure.adapter.out.persistence.repository.RefreshTokenJpaRepository;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 

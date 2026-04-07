@@ -28,7 +28,8 @@ class JsonAuthenticationEntryPointTest {
         assertThat(response.getContentType()).isEqualTo("application/json");
 
         String body = response.getContentAsString();
-        assertThat(body).contains("UNAUTHORIZED");
-        assertThat(body).contains("Se requiere autenticaci");
+        assertThat(body)
+                .contains("UNAUTHORIZED")
+                .contains("Se requiere autenticaci");
     }
 }

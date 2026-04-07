@@ -1,11 +1,9 @@
 package com.logistics.authentication.infrastructure.adapter.in.web.security;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.List;
-
-import javax.crypto.SecretKey;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.logistics.authentication.infrastructure.config.JwtProperties;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,14 +15,12 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.logistics.authentication.infrastructure.config.JwtProperties;
-
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)

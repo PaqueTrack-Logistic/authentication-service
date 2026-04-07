@@ -1,15 +1,10 @@
 package com.logistics.authentication.infrastructure.adapter.in.web;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.List;
-import java.util.Set;
-
+import com.logistics.authentication.application.port.in.LoginUseCase;
+import com.logistics.authentication.application.port.in.LoginUseCase.LoginResult;
+import com.logistics.authentication.application.port.in.RefreshTokenUseCase;
+import com.logistics.authentication.domain.exception.AuthenticationDomainException;
+import com.logistics.authentication.infrastructure.adapter.in.web.security.JwtPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,19 +17,20 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.logistics.authentication.application.port.in.LoginUseCase;
-import com.logistics.authentication.application.port.in.LoginUseCase.LoginResult;
-import com.logistics.authentication.application.port.in.RefreshTokenUseCase;
-import com.logistics.authentication.domain.exception.AuthenticationDomainException;
-import com.logistics.authentication.infrastructure.adapter.in.web.security.JwtPrincipal;
+import java.util.List;
+import java.util.Set;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
     private MockMvc mockMvc;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
     private LoginUseCase loginUseCase;

@@ -89,17 +89,19 @@ class LoginServiceTest {
 		verify(refreshTokens).save(eq(USER_ID), eq("hash-refresh"), any(Instant.class));
 	}
 
-	@Test
-	void login_unknownUser_throws401() {
-		when(users.findByEmail("x@y.com")).thenReturn(Optional.empty());
+    @Test
+    void login_unknownUser_throws401() {
+        when(users.findByEmail("x@y.com")).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> loginService.login(new LoginCommand("x@y.com", "password123")))
-				.isInstanceOf(AuthenticationDomainException.class)
-				.hasFieldOrPropertyWithValue("errorCode", "AUTH_INVALID_CREDENTIALS");
+        LoginCommand command = new LoginCommand("x@y.com", "password123");
 
-		verify(loginAudit).recordLoginAttempt(null, "x@y.com", false, "USER_NOT_FOUND");
-		verify(passwordEncoder, never()).matches(any(), any());
-	}
+        assertThatThrownBy(() -> loginService.login(command))
+                .isInstanceOf(AuthenticationDomainException.class)
+                .hasFieldOrPropertyWithValue("errorCode", "AUTH_INVALID_CREDENTIALS");
+
+        verify(loginAudit).recordLoginAttempt(null, "x@y.com", false, "USER_NOT_FOUND");
+        verify(passwordEncoder, never()).matches(any(), any());
+    }
 
 	@Test
 	void login_badPassword_incrementsAttempts() {
@@ -107,7 +109,8 @@ class LoginServiceTest {
 		when(users.findByEmail("admin@logistics.com")).thenReturn(Optional.of(user));
 		when(passwordEncoder.matches("wrong", user.getPasswordHash())).thenReturn(false);
 
-		assertThatThrownBy(() -> loginService.login(new LoginCommand("admin@logistics.com", "wrong")))
+        LoginCommand loginCommand = new LoginCommand("admin@logistics.com", "wrong");
+		assertThatThrownBy(() -> loginService.login(loginCommand))
 				.isInstanceOf(AuthenticationDomainException.class);
 
 		verify(users).registerFailedLogin(USER_ID, 1, null);
@@ -119,7 +122,9 @@ class LoginServiceTest {
 		var user = baseUser(0, now.plusSeconds(60));
 		when(users.findByEmail("admin@logistics.com")).thenReturn(Optional.of(user));
 
-		assertThatThrownBy(() -> loginService.login(new LoginCommand("admin@logistics.com", "password123")))
+        LoginCommand loginCommand = new LoginCommand("admin@logistics.com", "password123");
+
+        assertThatThrownBy(() -> loginService.login(loginCommand))
 				.isInstanceOf(AuthenticationDomainException.class)
 				.hasFieldOrPropertyWithValue("errorCode", "AUTH_ACCOUNT_LOCKED");
 
@@ -139,7 +144,9 @@ class LoginServiceTest {
 				.build();
 		when(users.findByEmail("admin@logistics.com")).thenReturn(Optional.of(user));
 
-		assertThatThrownBy(() -> loginService.login(new LoginCommand("admin@logistics.com", "password123")))
+        LoginCommand loginCommand = new LoginCommand("admin@logistics.com", "password123");
+
+        assertThatThrownBy(() -> loginService.login(loginCommand))
 				.isInstanceOf(AuthenticationDomainException.class)
 				.hasFieldOrPropertyWithValue("errorCode", "AUTH_ACCOUNT_DISABLED");
 	}

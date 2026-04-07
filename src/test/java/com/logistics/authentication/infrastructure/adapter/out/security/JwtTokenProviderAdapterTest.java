@@ -1,24 +1,20 @@
 package com.logistics.authentication.infrastructure.adapter.out.security;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.logistics.authentication.domain.model.UserAccount;
+import com.logistics.authentication.infrastructure.config.JwtProperties;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.crypto.SecretKey;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.logistics.authentication.domain.model.UserAccount;
-import com.logistics.authentication.infrastructure.config.JwtProperties;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class JwtTokenProviderAdapterTest {
 

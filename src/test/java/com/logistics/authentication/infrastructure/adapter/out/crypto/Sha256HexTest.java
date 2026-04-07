@@ -26,7 +26,8 @@ class Sha256HexTest {
     void of_returns64CharHexString() {
         String hash = Sha256Hex.of("test-input");
 
-        assertThat(hash).hasSize(64);
-        assertThat(hash).matches("[0-9a-f]{64}");
+        assertThat(hash)
+                .hasSize(64)
+                .matches("[0-9a-f]{64}");
     }
 }

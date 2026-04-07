@@ -36,8 +36,8 @@ class RefreshTokenIssuerAdapterTest {
         // Sha256Hex is a static utility, so we verify correctness by checking output
         String result = adapter.sha256Hex("test-token");
 
-        assertThat(result).isNotNull().hasSize(64);
-        // Should be consistent
-        assertThat(result).isEqualTo(adapter.sha256Hex("test-token"));
+        assertThat(result).isNotNull()
+                .hasSize(64)
+                .isEqualTo(adapter.sha256Hex("test-token"));
     }
 }
