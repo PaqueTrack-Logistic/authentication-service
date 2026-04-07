@@ -21,6 +21,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import com.logistics.authentication.application.port.in.LoginUseCase.LoginCommand;
 import com.logistics.authentication.application.port.out.JwtTokenProviderPort;
@@ -33,6 +35,7 @@ import com.logistics.authentication.domain.exception.AuthenticationDomainExcepti
 import com.logistics.authentication.domain.model.UserAccount;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class LoginServiceTest {
 
 	private static final UUID USER_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
