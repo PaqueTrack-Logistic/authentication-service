@@ -51,13 +51,10 @@ jobs:
       - name: Build, test and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/auth_db
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: postgres
-          SPRING_RABBITMQ_HOST: localhost
-          SPRING_RABBITMQ_PORT: 5672
+          SPRING_PROFILES_ACTIVE: test
         run: |
           mvn verify sonar:sonar \
+            -Dspring.profiles.active=test \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.organization=andrest3086  \
             -Dsonar.projectKey=AndresT3086_authentication-service \
