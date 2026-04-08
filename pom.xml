@@ -23,7 +23,6 @@
         <sonar.coverage.jacoco.xmlReportPaths>
             ${project.build.directory}/site/jacoco/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.coverage.exclusions>**/TrackingServiceApplication.java</sonar.coverage.exclusions>
 	</properties>
 	<dependencies>
 		<dependency>
