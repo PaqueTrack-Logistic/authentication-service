@@ -38,7 +38,7 @@ public class SecurityConfig {
 	private final SecurityProperties securityProperties;
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) {
 		http
                 // CSRF disabled because this is a stateless REST API using JWT authentication.
                 // No session or cookies are used, so CSRF protection is not required.

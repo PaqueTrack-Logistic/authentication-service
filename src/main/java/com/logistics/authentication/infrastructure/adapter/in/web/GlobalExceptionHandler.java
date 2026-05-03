@@ -1,6 +1,5 @@
 package com.logistics.authentication.infrastructure.adapter.in.web;
 
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
 		var details = ex.getBindingResult().getFieldErrors().stream()
 				.map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
-				.collect(Collectors.toList());
+				.toList();
 		return ResponseEntity
 				.status(HttpStatus.BAD_REQUEST)
 				.body(new ApiErrorResponse("VALIDATION_ERROR", "Payload inválido", details, currentTraceId()));
@@ -51,14 +50,17 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiErrorResponse> handleGeneric(Exception ex) {
-		log.error("Unhandled error traceId={}", currentTraceId(), ex);
+		String traceId = currentTraceId();
+		if (log.isErrorEnabled()) {
+			log.error("Unhandled error traceId={}", traceId, ex);
+		}
 		return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ApiErrorResponse(
 						"INTERNAL_ERROR",
 						"Error interno",
 						null,
-						currentTraceId()));
+						traceId));
 	}
 
 	private static String currentTraceId() {

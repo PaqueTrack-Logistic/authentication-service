@@ -91,13 +91,14 @@ public class AuthController {
 	public ResponseEntity<EntityModel<MeResponseBody>> me(
 			Authentication authentication,
 			HttpServletRequest request) {
-		if (authentication == null || !(authentication.getPrincipal() instanceof JwtPrincipal p)) {
+		if (authentication == null
+				|| !(authentication.getPrincipal() instanceof JwtPrincipal(String userId, String email))) {
 			return ResponseEntity.status(401).build();
 		}
 		List<String> roles = authentication.getAuthorities().stream()
 				.map(GrantedAuthority::getAuthority)
 				.toList();
-		var body = new MeResponseBody(p.userId(), p.email(), roles);
+		var body = new MeResponseBody(userId, email, roles);
 		EntityModel<MeResponseBody> model = EntityModel.of(body);
 		model.add(buildLink(request, "/api/v1/auth/me", "self"));
 		model.add(buildLink(request, "/swagger-ui/index.html", "describedby"));

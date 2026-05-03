@@ -1,6 +1,7 @@
 package com.logistics.authentication;
 
 import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.Test;
 
 /**
  * Integration test that verifies the Spring Boot application context loads successfully.
@@ -9,4 +10,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class AuthenticationApplicationTest {
     // Context loading is validated automatically by @SpringBootTest annotation
+
+    @Test
+    void contextLoads() {
+        // Verifies the Spring context starts without errors.
+    }
 }

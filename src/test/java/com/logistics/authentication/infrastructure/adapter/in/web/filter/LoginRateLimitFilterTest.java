@@ -37,8 +37,17 @@ class LoginRateLimitFilterTest {
         }
     }
 
+    private void executeRequest(MockHttpServletRequest request, MockHttpServletResponse response) {
+        try {
+            MockFilterChain chain = new MockFilterChain();
+            filter.doFilterInternal(request, response, chain);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Test
-    void whenLoginRequestsWithinLimit_thenPassThrough() throws Exception {
+    void whenLoginRequestsWithinLimit_thenPassThrough() {
         for (int i = 0; i < 3; i++) {
             MockHttpServletResponse response = new MockHttpServletResponse();
             executeLoginRequest("192.168.1.1", response);
@@ -47,7 +56,7 @@ class LoginRateLimitFilterTest {
     }
 
     @Test
-    void whenLoginAttemptsExceedLimit_thenReturn429RateLimited() throws Exception {
+    void whenLoginAttemptsExceedLimit_thenReturn429RateLimited() {
         String testIp = "10.0.0.1";
         // Exhaust the limit
         for (int i = 0; i < 3; i++) {
@@ -64,22 +73,21 @@ class LoginRateLimitFilterTest {
     }
 
     @Test
-    void whenNonLoginRequest_thenNotRateLimited() throws Exception {
+    void whenNonLoginRequest_thenNotRateLimited() {
         for (int i = 0; i < 10; i++) {
             MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/auth/me");
             request.setServletPath("/api/v1/auth/me");
             request.setRemoteAddr("10.0.0.2");
             MockHttpServletResponse response = new MockHttpServletResponse();
-            MockFilterChain chain = new MockFilterChain();
 
-            filter.doFilterInternal(request, response, chain);
+            executeRequest(request, response);
 
             assertThat(response.getStatus()).isNotEqualTo(429);
         }
     }
 
     @Test
-    void whenDifferentIpsLogin_thenRateLimitedIndependently() throws Exception {
+    void whenDifferentIpsLogin_thenRateLimitedIndependently() {
         String ip1 = "10.0.0.10";
         String ip2 = "10.0.0.20";
 
