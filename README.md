@@ -80,15 +80,15 @@ Se ejecuta **detrás de un API Gateway** que mapea rutas públicas (`/api/auth/*
 
 ### Diagrama de Flujo: Autenticación y Autorización
 
-
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryTextColor': '#000000', 'secondaryTextColor': '#000000', 'tertiaryTextColor': '#000000', 'lineColor': '#000000'}}}%%
 sequenceDiagram
     participant FE as 🖥️ Frontend
     participant GW as 🚪 API Gateway
     participant AUTH as 🔐 Auth Service
     participant DB as 🗄️ PostgreSQL
     participant CRYPTO as 🔑 Security
-   
+    
     rect rgb(200, 220, 250)
     Note over FE,CRYPTO: 1️⃣ LOGIN FLOW
     FE->>GW: POST /api/auth/login<br/>{email, password}
@@ -105,7 +105,7 @@ sequenceDiagram
     AUTH-->>GW: 200 OK
     GW-->>FE: {accessToken, refreshToken, roles, expiresIn}
     end
-   
+    
     rect rgb(220, 250, 220)
     Note over FE,CRYPTO: 2️⃣ AUTHORIZED REQUEST
     FE->>GW: GET /api/auth/me<br/>Authorization: Bearer JWT
@@ -117,7 +117,7 @@ sequenceDiagram
     AUTH-->>GW: 200 OK {user data}
     GW-->>FE: Datos del usuario
     end
-   
+    
     rect rgb(250, 220, 220)
     Note over FE,CRYPTO: 3️⃣ REFRESH TOKEN FLOW
     FE->>GW: POST /api/auth/refresh<br/>{refreshToken}
@@ -134,9 +134,7 @@ sequenceDiagram
     end
 ```
 
-
 ### Diagrama de Componentes: Arquitectura Hexagonal
-
 
 ```mermaid
 graph TB
@@ -144,68 +142,68 @@ graph TB
         CTRL["<b>AuthController</b><br/>AdminStatsController<br/>GlobalExceptionHandler"]
         FILTER["<b>Filters</b><br/>JwtAuthenticationFilter<br/>TraceIdFilter"]
     end
-   
+    
     subgraph APPPORT["📨 Puertos de Entrada - Use Cases"]
         UC1["<b>LoginUseCase</b>"]
         UC2["<b>RefreshTokenUseCase</b>"]
         UC3["<b>GetUserRoleStatsUseCase</b>"]
     end
-   
+    
     subgraph APPSERVICE["⚙️ Servicios de Aplicación"]
         SVC1["<b>LoginService</b><br/>Implementa LoginUseCase"]
         SVC2["<b>RefreshTokenService</b><br/>Implementa RefreshTokenUseCase"]
         SVC3["<b>UserRoleStatsService</b><br/>Implementa GetUserRoleStatsUseCase"]
     end
-   
+    
     subgraph DOMAIN["🎯 Capa de Dominio - Lógica Pura"]
         MODEL["<b>UserAccount</b><br/>LoginCommand<br/>LoginResult"]
         EXC["<b>AuthenticationDomainException</b>"]
         READM["<b>RoleUserCount</b><br/>(Read Model)"]
     end
-   
+    
     subgraph OUTPORT["📤 Puertos de Salida"]
         PORT1["UserRepositoryPort<br/>PasswordEncoderPort"]
         PORT2["JwtTokenProviderPort<br/>RefreshTokenIssuerPort"]
         PORT3["LoginAuditPort<br/>UserRoleStatsQueryPort"]
     end
-   
+    
     subgraph INFRAADAPT["🔧 Infraestructura - Adaptadores OUT"]
         PERSIST_ADAPT["<b>Adapters Persistencia</b><br/>UserPersistenceAdapter<br/>RefreshTokenPersistenceAdapter"]
         JWT_ADAPT["<b>Adapters Seguridad</b><br/>JwtTokenProviderAdapter<br/>PasswordEncoderAdapter<br/>RefreshTokenIssuerAdapter"]
         AUDIT_ADAPT["<b>LoginAuditJdbcAdapter</b>"]
     end
-   
+    
     subgraph INFRAENT["🗂️ Entidades JPA"]
         ENTITY["UserEntity<br/>RoleEntity<br/>RefreshTokenEntity"]
         REPO["<b>Repositories</b><br/>UserJpaRepository<br/>RefreshTokenJpaRepository"]
     end
-   
+    
     subgraph CONFIG["⚙️ Configuración"]
         CONF["SecurityConfig<br/>JwtProperties<br/>JwtSecretStrengthValidator"]
     end
-   
+    
     subgraph EXTERNAL["🗄️ SERVICIOS EXTERNOS"]
         DB[("PostgreSQL<br/>auth_db")]
     end
-   
+    
     %% Flujo de entrada
     FILTER -->|valida JWT| CTRL
     CTRL -->|solicita| UC1
     CTRL -->|solicita| UC2
     CTRL -->|solicita| UC3
-   
+    
     %% Puertos a Servicios
     UC1 -->|implementa| SVC1
     UC2 -->|implementa| SVC2
     UC3 -->|implementa| SVC3
-   
+    
     %% Servicios al Dominio
     SVC1 -->|usa| MODEL
     SVC2 -->|usa| MODEL
     SVC3 -->|usa| READM
     SVC1 -.->|lanza| EXC
     SVC2 -.->|lanza| EXC
-   
+    
     %% Servicios a Puertos OUT
     SVC1 -->|depende| PORT1
     SVC1 -->|depende| PORT2
@@ -213,22 +211,22 @@ graph TB
     SVC2 -->|depende| PORT1
     SVC2 -->|depende| PORT2
     SVC3 -->|depende| PORT3
-   
+    
     %% Puertos a Adaptadores
     PORT1 -->|implementa| PERSIST_ADAPT
     PORT1 -->|implementa| JWT_ADAPT
     PORT2 -->|implementa| JWT_ADAPT
     PORT3 -->|implementa| AUDIT_ADAPT
-   
+    
     %% Adaptadores a Entidades
     PERSIST_ADAPT -->|usa| ENTITY
     PERSIST_ADAPT -->|usa| REPO
     JWT_ADAPT -->|configura| CONF
-   
+    
     %% Repositorios a BD
     REPO -->|CRUD| DB
     AUDIT_ADAPT -->|escribe| DB
-   
+    
     %% Estilos
     classDef input fill:#bbdefb,stroke:#1976d2,stroke-width:2px,color:#000
     classDef port fill:#c8e6c9,stroke:#388e3c,stroke-width:2px,color:#000
@@ -237,7 +235,7 @@ graph TB
     classDef infra fill:#ffccbc,stroke:#d84315,stroke-width:2px,color:#000
     classDef entity fill:#f8bbd0,stroke:#c2185b,stroke-width:2px,color:#000
     classDef external fill:#d1c4e9,stroke:#512da8,stroke-width:2px,color:#fff
-   
+    
     class INPUT,CTRL,FILTER input
     class APPPORT,UC1,UC2,UC3 port
     class APPSERVICE,SVC1,SVC2,SVC3 service
