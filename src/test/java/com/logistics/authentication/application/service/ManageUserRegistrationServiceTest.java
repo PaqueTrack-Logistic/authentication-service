@@ -38,8 +38,8 @@ class ManageUserRegistrationServiceTest {
 	private ManageUserRegistrationService service;
 
 	@Test
-	void listAssignableRoles_returnsOperatorAndAdmin() {
-		assertThat(service.listAssignableRoles()).containsExactly("ROLE_ADMIN", "ROLE_OPERATOR");
+	void listAssignableRoles_returnsOperatorAdminAndLogistics() {
+		assertThat(service.listAssignableRoles()).containsExactly("ROLE_ADMIN", "ROLE_LOGISTICS", "ROLE_OPERATOR");
 	}
 
 	@Test

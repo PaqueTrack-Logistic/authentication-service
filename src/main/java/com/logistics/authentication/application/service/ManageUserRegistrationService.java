@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ManageUserRegistrationService implements ManageUserRegistrationUseCase {
 
-	private static final Set<String> ASSIGNABLE_ROLES = Set.of("ROLE_OPERATOR", "ROLE_ADMIN");
+	private static final Set<String> ASSIGNABLE_ROLES = Set.of("ROLE_OPERATOR", "ROLE_ADMIN", "ROLE_LOGISTICS");
 
 	private final UserRepositoryPort users;
 	private final RoleRepositoryPort roles;
@@ -51,7 +51,7 @@ public class ManageUserRegistrationService implements ManageUserRegistrationUseC
 		if (!ASSIGNABLE_ROLES.contains(role)) {
 			throw new AuthenticationDomainException(
 					"AUTH_INVALID_ROLE",
-					"Rol no permitido. Use ROLE_OPERATOR o ROLE_ADMIN");
+					"Rol no permitido. Use ROLE_OPERATOR, ROLE_ADMIN o ROLE_LOGISTICS");
 		}
 		UUID roleId = roles.findRoleIdByName(role)
 				.orElseThrow(() -> new IllegalStateException("Rol no configurado en BD: " + role));

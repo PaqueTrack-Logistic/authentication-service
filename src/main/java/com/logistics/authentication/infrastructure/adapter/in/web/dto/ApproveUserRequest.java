@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Pattern;
 @Schema(description = "Aprobación de registro con rol asignado por el administrador")
 public record ApproveUserRequest(
 		@NotBlank
-		@Pattern(regexp = "^ROLE_(OPERATOR|ADMIN)$", message = "Rol debe ser ROLE_OPERATOR o ROLE_ADMIN")
+		@Pattern(regexp = "^ROLE_(OPERATOR|ADMIN|LOGISTICS)$", message = "Rol debe ser ROLE_OPERATOR, ROLE_ADMIN o ROLE_LOGISTICS")
 		@Schema(example = "ROLE_OPERATOR", description = "Rol que tendrá el usuario tras la aprobación")
 		String role) {
 }

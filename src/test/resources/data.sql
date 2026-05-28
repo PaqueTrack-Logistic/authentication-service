@@ -2,7 +2,8 @@
 -- Password: password123 (BCrypt cost 10)
 INSERT INTO auth_roles (id, name) VALUES
     ('11111111-1111-1111-1111-111111111111', 'ROLE_ADMIN'),
-    ('22222222-2222-2222-2222-222222222222', 'ROLE_OPERATOR');
+    ('22222222-2222-2222-2222-222222222222', 'ROLE_OPERATOR'),
+    ('55555555-5555-5555-5555-555555555555', 'ROLE_LOGISTICS');
 
 INSERT INTO auth_users (id, email, password_hash, enabled, registration_status, failed_login_attempts, created_at, updated_at)
 VALUES (
