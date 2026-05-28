@@ -40,6 +40,9 @@ public class UserEntity {
 	@Column(nullable = false)
 	private boolean enabled = true;
 
+	@Column(name = "registration_status", nullable = false, length = 20)
+	private String registrationStatus = "APPROVED";
+
 	@Column(name = "failed_login_attempts", nullable = false)
 	private int failedLoginAttempts;
 

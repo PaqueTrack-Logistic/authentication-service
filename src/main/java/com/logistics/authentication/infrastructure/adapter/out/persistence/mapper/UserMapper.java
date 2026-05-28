@@ -4,6 +4,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.logistics.authentication.domain.model.RegistrationStatus;
 import com.logistics.authentication.domain.model.UserAccount;
 import com.logistics.authentication.infrastructure.adapter.out.persistence.entity.UserEntity;
 
@@ -20,8 +21,17 @@ public class UserMapper {
 				.passwordHash(entity.getPasswordHash())
 				.roles(roles)
 				.enabled(entity.isEnabled())
+				.registrationStatus(parseStatus(entity.getRegistrationStatus()))
 				.failedLoginAttempts(entity.getFailedLoginAttempts())
 				.lockedUntil(entity.getLockedUntil())
+				.createdAt(entity.getCreatedAt())
 				.build();
+	}
+
+	private static RegistrationStatus parseStatus(String value) {
+		if (value == null || value.isBlank()) {
+			return RegistrationStatus.APPROVED;
+		}
+		return RegistrationStatus.valueOf(value);
 	}
 }

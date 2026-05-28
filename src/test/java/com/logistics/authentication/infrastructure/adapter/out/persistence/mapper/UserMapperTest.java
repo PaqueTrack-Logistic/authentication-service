@@ -25,6 +25,7 @@ class UserMapperTest {
         entity.setEmail("admin@logistics.com");
         entity.setPasswordHash("$2a$10$hashedpassword");
         entity.setEnabled(true);
+        entity.setRegistrationStatus("APPROVED");
         entity.setFailedLoginAttempts(2);
         entity.setLockedUntil(Instant.parse("2026-12-31T23:59:59Z"));
 
@@ -56,6 +57,7 @@ class UserMapperTest {
         entity.setEmail("noroles@test.com");
         entity.setPasswordHash("hash");
         entity.setEnabled(true);
+        entity.setRegistrationStatus("APPROVED");
         entity.setFailedLoginAttempts(0);
         entity.setLockedUntil(null);
         entity.setRoles(new HashSet<>());
@@ -73,6 +75,7 @@ class UserMapperTest {
         entity.setEmail("disabled@test.com");
         entity.setPasswordHash("hash");
         entity.setEnabled(false);
+        entity.setRegistrationStatus("APPROVED");
         entity.setFailedLoginAttempts(5);
         entity.setLockedUntil(null);
         entity.setRoles(new HashSet<>());

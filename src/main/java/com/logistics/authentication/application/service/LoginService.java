@@ -16,6 +16,7 @@ import com.logistics.authentication.application.port.out.RefreshTokenRepositoryP
 import com.logistics.authentication.application.port.out.UserRepositoryPort;
 import com.logistics.authentication.domain.exception.AuthenticationDomainException;
 import com.logistics.authentication.domain.model.UserAccount;
+import com.logistics.authentication.domain.service.UserAuthenticationPolicy;
 
 import lombok.RequiredArgsConstructor;
 
@@ -47,14 +48,18 @@ public class LoginService implements LoginUseCase {
 
 		UserAccount user = userOpt.get();
 
-		if (!user.isEnabled()) {
-			loginAudit.recordLoginAttempt(user.getId(), user.getEmail(), false, "USER_DISABLED");
-			throw new AuthenticationDomainException("AUTH_ACCOUNT_DISABLED", "Cuenta deshabilitada");
-		}
-
-		if (user.isLocked(now)) {
-			loginAudit.recordLoginAttempt(user.getId(), user.getEmail(), false, "ACCOUNT_LOCKED");
-			throw new AuthenticationDomainException("AUTH_ACCOUNT_LOCKED", "Cuenta bloqueada temporalmente");
+		try {
+			UserAuthenticationPolicy.assertCanAuthenticate(user, now);
+		} catch (AuthenticationDomainException ex) {
+			String reason = switch (ex.getErrorCode()) {
+				case "AUTH_PENDING_APPROVAL" -> "PENDING_APPROVAL";
+				case "AUTH_REGISTRATION_REJECTED" -> "REGISTRATION_REJECTED";
+				case "AUTH_ACCOUNT_DISABLED" -> "USER_DISABLED";
+				case "AUTH_ACCOUNT_LOCKED" -> "ACCOUNT_LOCKED";
+				default -> "AUTH_BLOCKED";
+			};
+			loginAudit.recordLoginAttempt(user.getId(), user.getEmail(), false, reason);
+			throw ex;
 		}
 
 		boolean passwordOk = passwordEncoder.matches(command.rawPassword(), user.getPasswordHash());

@@ -19,8 +19,11 @@ public class UserAccount {
 	String passwordHash;
 	Set<String> roles;
 	boolean enabled;
+	@Builder.Default
+	RegistrationStatus registrationStatus = RegistrationStatus.APPROVED;
 	int failedLoginAttempts;
 	Instant lockedUntil;
+	Instant createdAt;
 
 	public boolean isLocked(Instant now) {
 		return lockedUntil != null && lockedUntil.isAfter(now);

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,10 +21,14 @@ import com.logistics.authentication.application.port.in.LoginUseCase.LoginComman
 import com.logistics.authentication.application.port.in.LoginUseCase.LoginResult;
 import com.logistics.authentication.application.port.in.RefreshTokenUseCase;
 import com.logistics.authentication.application.port.in.RefreshTokenUseCase.RefreshCommand;
+import com.logistics.authentication.application.port.in.RegisterUseCase;
+import com.logistics.authentication.application.port.in.RegisterUseCase.RegisterCommand;
 import com.logistics.authentication.infrastructure.adapter.in.web.dto.LoginRequest;
 import com.logistics.authentication.infrastructure.adapter.in.web.dto.LoginResponseBody;
 import com.logistics.authentication.infrastructure.adapter.in.web.dto.MeResponseBody;
 import com.logistics.authentication.infrastructure.adapter.in.web.dto.RefreshRequest;
+import com.logistics.authentication.infrastructure.adapter.in.web.dto.RegisterRequest;
+import com.logistics.authentication.infrastructure.adapter.in.web.dto.RegisterResponseBody;
 import com.logistics.authentication.infrastructure.adapter.in.web.security.JwtPrincipal;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,6 +46,20 @@ public class AuthController {
 
 	private final LoginUseCase loginUseCase;
 	private final RefreshTokenUseCase refreshTokenUseCase;
+	private final RegisterUseCase registerUseCase;
+
+	@Operation(
+			summary = "Registro de usuario",
+			description = "Crea solicitud con rol OPERATOR; requiere aprobación de un administrador.")
+	@PostMapping(
+			value = "/register",
+			produces = { MediaType.APPLICATION_JSON_VALUE, "application/hal+json" },
+			consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<EntityModel<RegisterResponseBody>> register(@Valid @RequestBody RegisterRequest request) {
+		var result = registerUseCase.register(new RegisterCommand(request.email(), request.password()));
+		var body = new RegisterResponseBody(result.userId(), result.email(), result.status(), result.message());
+		return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(body));
+	}
 
 	@Operation(summary = "Login", description = "Autentica por correo y contraseña; devuelve JWT Bearer.")
 	@PostMapping(

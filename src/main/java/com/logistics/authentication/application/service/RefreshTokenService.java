@@ -14,6 +14,7 @@ import com.logistics.authentication.application.port.out.RefreshTokenRepositoryP
 import com.logistics.authentication.application.port.out.UserRepositoryPort;
 import com.logistics.authentication.domain.exception.AuthenticationDomainException;
 import com.logistics.authentication.domain.model.UserAccount;
+import com.logistics.authentication.domain.service.UserAuthenticationPolicy;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,12 +42,7 @@ public class RefreshTokenService implements RefreshTokenUseCase {
 		UserAccount user = users.findById(active.userId())
 				.orElseThrow(() -> new AuthenticationDomainException("INVALID_REFRESH", "Usuario no encontrado"));
 
-		if (!user.isEnabled()) {
-			throw new AuthenticationDomainException("AUTH_ACCOUNT_DISABLED", "Cuenta deshabilitada");
-		}
-		if (user.isLocked(now)) {
-			throw new AuthenticationDomainException("AUTH_ACCOUNT_LOCKED", "Cuenta bloqueada temporalmente");
-		}
+		UserAuthenticationPolicy.assertCanAuthenticate(user, now);
 
 		refreshTokens.revokeById(active.id());
 

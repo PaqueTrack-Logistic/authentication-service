@@ -32,6 +32,7 @@ import com.logistics.authentication.application.port.out.RefreshTokenIssuerPort;
 import com.logistics.authentication.application.port.out.RefreshTokenRepositoryPort;
 import com.logistics.authentication.application.port.out.UserRepositoryPort;
 import com.logistics.authentication.domain.exception.AuthenticationDomainException;
+import com.logistics.authentication.domain.model.RegistrationStatus;
 import com.logistics.authentication.domain.model.UserAccount;
 
 @ExtendWith(MockitoExtension.class)
@@ -137,6 +138,7 @@ class LoginServiceTest {
 				.passwordHash("hash")
 				.roles(Set.of("ROLE_ADMIN"))
 				.enabled(false)
+				.registrationStatus(RegistrationStatus.APPROVED)
 				.failedLoginAttempts(0)
 				.lockedUntil(null)
 				.build();
@@ -155,6 +157,7 @@ class LoginServiceTest {
 				.passwordHash("hash")
 				.roles(Set.of("ROLE_ADMIN"))
 				.enabled(true)
+				.registrationStatus(RegistrationStatus.APPROVED)
 				.failedLoginAttempts(failed)
 				.lockedUntil(lockedUntil)
 				.build();

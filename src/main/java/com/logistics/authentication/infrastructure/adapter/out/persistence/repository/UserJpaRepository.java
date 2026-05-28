@@ -13,7 +13,11 @@ import com.logistics.authentication.infrastructure.adapter.out.persistence.entit
 
 public interface UserJpaRepository extends JpaRepository<UserEntity, UUID> {
 
+	boolean existsByEmailIgnoreCase(String email);
+
 	Optional<UserEntity> findByEmailIgnoreCase(String email);
+
+	List<UserEntity> findByRegistrationStatusOrderByCreatedAtAsc(String registrationStatus);
 
 	/**
 	 * Consulta no trivial: join usuario-roles, agregación y agrupación (reporte operativo).
@@ -31,4 +35,11 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, UUID> {
 			@Param("id") UUID id,
 			@Param("attempts") int attempts,
 			@Param("lockedUntil") java.time.Instant lockedUntil);
+
+	@Modifying
+	@Query("update UserEntity u set u.registrationStatus = :status, u.enabled = :enabled, u.updatedAt = CURRENT_TIMESTAMP where u.id = :id")
+	void updateRegistrationStatus(
+			@Param("id") UUID id,
+			@Param("status") String status,
+			@Param("enabled") boolean enabled);
 }
