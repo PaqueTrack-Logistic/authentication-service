@@ -37,9 +37,10 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, UUID> {
 			@Param("lockedUntil") java.time.Instant lockedUntil);
 
 	@Modifying
-	@Query("update UserEntity u set u.registrationStatus = :status, u.enabled = :enabled, u.updatedAt = CURRENT_TIMESTAMP where u.id = :id")
+	@Query("update UserEntity u set u.registrationStatus = :status, u.enabled = :enabled, u.updatedAt = :updatedAt where u.id = :id")
 	void updateRegistrationStatus(
 			@Param("id") UUID id,
 			@Param("status") String status,
-			@Param("enabled") boolean enabled);
+			@Param("enabled") boolean enabled,
+			@Param("updatedAt") java.time.Instant updatedAt);
 }

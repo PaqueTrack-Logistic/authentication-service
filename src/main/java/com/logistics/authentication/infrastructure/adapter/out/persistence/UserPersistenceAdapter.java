@@ -66,7 +66,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
 
 	@Override
 	public void updateRegistrationStatus(UUID userId, RegistrationStatus status, boolean enabled) {
-		userJpaRepository.updateRegistrationStatus(userId, status.name(), enabled);
+		userJpaRepository.updateRegistrationStatus(userId, status.name(), enabled, java.time.Instant.now());
 	}
 
 	@Override
