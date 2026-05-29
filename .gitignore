@@ -37,3 +37,4 @@ src/main/resources/application-dev.properties
 docker-compose.yml
 .env.dev
 .env.prod
+.env
