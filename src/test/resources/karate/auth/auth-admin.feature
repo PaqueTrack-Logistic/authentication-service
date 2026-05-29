@@ -60,8 +60,10 @@ Feature: Administración de usuarios y control de acceso por rol (RBAC)
     * def opToken = response.accessToken
 
     # 4) el operador intenta un endpoint de admin -> 403 (access denied)
+    #    Con X-Trace-Id para ejercitar la propagación de traceId en el accessDeniedHandler
     Given path '/api/v1/admin/users/pending'
     And header Authorization = 'Bearer ' + opToken
+    And header X-Trace-Id = 'trace-403-operador'
     When method GET
     Then status 403
 

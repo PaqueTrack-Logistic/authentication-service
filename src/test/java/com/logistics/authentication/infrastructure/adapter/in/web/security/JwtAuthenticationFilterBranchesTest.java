@@ -121,6 +121,20 @@ class JwtAuthenticationFilterBranchesTest {
 	}
 
 	@Test
+	void invalidToken_withBlankTrace_returns401() throws Exception {
+		// MDC y cabecera en blanco: ejercita las ramas !isBlank() == false en firstNonBlank
+		when(jwtProperties.getSecret()).thenReturn(SECRET);
+		MDC.put(TraceIdFilter.TRACE_ID_MDC, "   ");
+		MockHttpServletRequest request = req("/api/v1/users", "Bearer not-a-valid-token");
+		request.addHeader(TraceIdFilter.TRACE_ID_HEADER, "   ");
+		MockHttpServletResponse response = new MockHttpServletResponse();
+
+		filter.doFilterInternal(request, response, new MockFilterChain());
+
+		assertThat(response.getStatus()).isEqualTo(401);
+	}
+
+	@Test
 	void invalidToken_withTraceIdInMdc_returns401WithTrace() throws Exception {
 		when(jwtProperties.getSecret()).thenReturn(SECRET);
 		MDC.put(TraceIdFilter.TRACE_ID_MDC, "trace-from-mdc");

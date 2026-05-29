@@ -37,6 +37,20 @@ class JsonAuthenticationEntryPointBranchesTest {
 	}
 
 	@Test
+	void commence_withBlankTrace_fallsThroughToNull() throws Exception {
+		// MDC y cabecera en blanco: ejercita las ramas !isBlank() == false
+		MDC.put(TraceIdFilter.TRACE_ID_MDC, "   ");
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader(TraceIdFilter.TRACE_ID_HEADER, "   ");
+		MockHttpServletResponse response = new MockHttpServletResponse();
+
+		entryPoint.commence(request, response, new BadCredentialsException("x"));
+
+		assertThat(response.getStatus()).isEqualTo(401);
+		assertThat(response.getContentAsString()).contains("UNAUTHORIZED");
+	}
+
+	@Test
 	void commence_usesTraceIdFromHeaderWhenMdcEmpty() throws Exception {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addHeader(TraceIdFilter.TRACE_ID_HEADER, "trace-header");

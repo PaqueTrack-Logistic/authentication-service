@@ -133,6 +133,18 @@ class ManageUserRegistrationServiceBranchesTest {
 	}
 
 	@Test
+	void approve_nullRole_throwsInvalidRole() {
+		UUID userId = UUID.randomUUID();
+		when(users.findById(userId)).thenReturn(Optional.of(pending(userId, Set.of())));
+
+		assertThatThrownBy(() -> service.approve(userId, null))
+				.isInstanceOf(AuthenticationDomainException.class)
+				.extracting("errorCode").isEqualTo("AUTH_INVALID_ROLE");
+
+		verify(users, never()).approvePendingUser(any(), any());
+	}
+
+	@Test
 	void reject_pendingUser_marksRejected() {
 		UUID userId = UUID.randomUUID();
 		when(users.findById(userId)).thenReturn(Optional.of(pending(userId, Set.of())));
