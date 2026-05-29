@@ -12,7 +12,11 @@ class AuthKarateTest {
 
     @Karate.Test
     Karate testAuth() {
-        return Karate.run("classpath:karate/auth/auth-login.feature")
+        return Karate.run(
+                "classpath:karate/auth/auth-login.feature",
+                "classpath:karate/auth/auth-register.feature",
+                "classpath:karate/auth/auth-refresh.feature",
+                "classpath:karate/auth/auth-admin.feature")
                 .systemProperty("local.server.port", String.valueOf(port));
     }
 }
