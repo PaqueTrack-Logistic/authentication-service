@@ -16,6 +16,7 @@ import com.logistics.authentication.application.port.out.RefreshTokenRepositoryP
 import com.logistics.authentication.application.port.out.UserRepositoryPort;
 import com.logistics.authentication.domain.exception.AuthenticationDomainException;
 import com.logistics.authentication.domain.model.UserAccount;
+import com.logistics.authentication.domain.service.LoginAuditReasonMapper;
 import com.logistics.authentication.domain.service.UserAuthenticationPolicy;
 
 import lombok.RequiredArgsConstructor;
@@ -39,41 +40,52 @@ public class LoginService implements LoginUseCase {
 	@Transactional
 	public LoginResult login(LoginCommand command) {
 		Instant now = clock.instant();
-		var userOpt = users.findByEmail(command.email().trim().toLowerCase());
+		String normalizedEmail = command.email().trim().toLowerCase();
+		UserAccount user = resolveUserOrFail(normalizedEmail, command.email());
+		assertCanAuthenticate(user);
+		assertPasswordMatches(user, command.rawPassword(), now);
+		return issueLoginResult(user, now);
+	}
 
-		if (userOpt.isEmpty()) {
-			loginAudit.recordLoginAttempt(null, command.email(), false, "USER_NOT_FOUND");
-			throw new AuthenticationDomainException("AUTH_INVALID_CREDENTIALS", "Credenciales inválidas");
-		}
+	private UserAccount resolveUserOrFail(String normalizedEmail, String auditEmail) {
+		return users.findByEmail(normalizedEmail)
+				.orElseThrow(() -> {
+					loginAudit.recordLoginAttempt(null, auditEmail, false, "USER_NOT_FOUND");
+					return new AuthenticationDomainException("AUTH_INVALID_CREDENTIALS", "Credenciales inválidas");
+				});
+	}
 
-		UserAccount user = userOpt.get();
-
+	private void assertCanAuthenticate(UserAccount user) {
 		try {
-			UserAuthenticationPolicy.assertCanAuthenticate(user, now);
+			UserAuthenticationPolicy.assertCanAuthenticate(user, clock.instant());
 		} catch (AuthenticationDomainException ex) {
-			String reason = switch (ex.getErrorCode()) {
-				case "AUTH_PENDING_APPROVAL" -> "PENDING_APPROVAL";
-				case "AUTH_REGISTRATION_REJECTED" -> "REGISTRATION_REJECTED";
-				case "AUTH_ACCOUNT_DISABLED" -> "USER_DISABLED";
-				case "AUTH_ACCOUNT_LOCKED" -> "ACCOUNT_LOCKED";
-				default -> "AUTH_BLOCKED";
-			};
-			loginAudit.recordLoginAttempt(user.getId(), user.getEmail(), false, reason);
+			loginAudit.recordLoginAttempt(
+					user.getId(),
+					user.getEmail(),
+					false,
+					LoginAuditReasonMapper.forAuthError(ex.getErrorCode()));
 			throw ex;
 		}
+	}
 
-		boolean passwordOk = passwordEncoder.matches(command.rawPassword(), user.getPasswordHash());
-		if (!passwordOk) {
-			int next = user.getFailedLoginAttempts() + 1;
-			Instant lockUntil = null;
-			if (next >= MAX_FAILED_ATTEMPTS) {
-				lockUntil = now.plus(LOCK_MINUTES, ChronoUnit.MINUTES);
-			}
-			users.registerFailedLogin(user.getId(), next, lockUntil);
-			loginAudit.recordLoginAttempt(user.getId(), user.getEmail(), false, "BAD_PASSWORD");
-			throw new AuthenticationDomainException("AUTH_INVALID_CREDENTIALS", "Credenciales inválidas");
+	private void assertPasswordMatches(UserAccount user, String rawPassword, Instant now) {
+		if (passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+			return;
 		}
+		registerFailedPasswordAttempt(user, now);
+		loginAudit.recordLoginAttempt(user.getId(), user.getEmail(), false, "BAD_PASSWORD");
+		throw new AuthenticationDomainException("AUTH_INVALID_CREDENTIALS", "Credenciales inválidas");
+	}
 
+	private void registerFailedPasswordAttempt(UserAccount user, Instant now) {
+		int next = user.getFailedLoginAttempts() + 1;
+		Instant lockUntil = next >= MAX_FAILED_ATTEMPTS
+				? now.plus(LOCK_MINUTES, ChronoUnit.MINUTES)
+				: null;
+		users.registerFailedLogin(user.getId(), next, lockUntil);
+	}
+
+	private LoginResult issueLoginResult(UserAccount user, Instant now) {
 		users.resetFailedLogin(user.getId());
 		String token = jwtTokenProvider.createAccessToken(user);
 		loginAudit.recordLoginAttempt(user.getId(), user.getEmail(), true, null);

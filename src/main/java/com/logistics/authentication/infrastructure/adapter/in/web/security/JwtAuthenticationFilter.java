@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.crypto.SecretKey;
 
@@ -46,6 +47,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private static final AntPathMatcher MATCHER = new AntPathMatcher();
 
+	private static final Set<String> PUBLIC_PATH_PATTERNS = Set.of(
+			"/api/v1/auth/login",
+			"/api/v1/auth/register",
+			"/api/v1/auth/refresh",
+			"/v3/api-docs/**",
+			"/swagger-ui/**",
+			"/swagger-ui.html");
+
 	private final JwtProperties jwtProperties;
 	private final ObjectMapper objectMapper;
 
@@ -53,11 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) {
 		String path = request.getServletPath();
-		return MATCHER.match("/api/v1/auth/login", path)
-				|| MATCHER.match("/api/v1/auth/refresh", path)
-				|| MATCHER.match("/v3/api-docs/**", path)
-				|| MATCHER.match("/swagger-ui/**", path)
-				|| MATCHER.match("/swagger-ui.html", path);
+		return PUBLIC_PATH_PATTERNS.stream().anyMatch(pattern -> MATCHER.match(pattern, path));
 	}
 
 	@Override
@@ -65,49 +70,69 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			HttpServletRequest request,
 			HttpServletResponse response,
 			FilterChain filterChain) throws ServletException, IOException {
-		String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-		if (header == null || !header.startsWith("Bearer ")) {
+		String bearerToken = extractBearerToken(request.getHeader(HttpHeaders.AUTHORIZATION));
+		if (bearerToken == null) {
 			filterChain.doFilter(request, response);
 			return;
 		}
-		String token = header.substring(7);
 		try {
-			SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
-			Claims claims = Jwts.parser()
-					.verifyWith(key)
-					.build()
-					.parseSignedClaims(token)
-					.getPayload();
-
-			String userId = claims.getSubject();
-			String email = claims.get("email", String.class);
-			List<String> roles = extractRoles(claims.get("roles"));
-			Collection<GrantedAuthority> authorities = new ArrayList<>();
-			for (String r : roles) {
-				if (r != null && !r.isBlank()) {
-					authorities.add(new SimpleGrantedAuthority(r.startsWith("ROLE_") ? r : "ROLE_" + r));
-				}
-			}
-			Authentication auth = new UsernamePasswordAuthenticationToken(
-					new JwtPrincipal(userId, email),
-					null,
-					authorities);
-			SecurityContextHolder.getContext().setAuthentication(auth);
+			applyAuthenticationFromToken(bearerToken);
 		}
 		catch (JwtException | IllegalArgumentException ex) {
-			SecurityContextHolder.clearContext();
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-			String trace = firstNonBlank(MDC.get(TraceIdFilter.TRACE_ID_MDC), request.getHeader(TraceIdFilter.TRACE_ID_HEADER));
-			var body = new ApiErrorResponse(
-					"INVALID_OR_EXPIRED_TOKEN",
-					"Token Bearer inválido o expirado",
-					null,
-					trace);
-			objectMapper.writeValue(response.getOutputStream(), body);
+			writeUnauthorized(response, request);
 			return;
 		}
 		filterChain.doFilter(request, response);
+	}
+
+	private static String extractBearerToken(String authorizationHeader) {
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+			return null;
+		}
+		return authorizationHeader.substring(7);
+	}
+
+	private void applyAuthenticationFromToken(String token) {
+		SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+		Claims claims = Jwts.parser()
+				.verifyWith(key)
+				.build()
+				.parseSignedClaims(token)
+				.getPayload();
+
+		String userId = claims.getSubject();
+		String email = claims.get("email", String.class);
+		Collection<GrantedAuthority> authorities = toAuthorities(extractRoles(claims.get("roles")));
+		Authentication auth = new UsernamePasswordAuthenticationToken(
+				new JwtPrincipal(userId, email),
+				null,
+				authorities);
+		SecurityContextHolder.getContext().setAuthentication(auth);
+	}
+
+	private static Collection<GrantedAuthority> toAuthorities(List<String> roles) {
+		Collection<GrantedAuthority> authorities = new ArrayList<>();
+		for (String role : roles) {
+			if (role != null && !role.isBlank()) {
+				authorities.add(new SimpleGrantedAuthority(role.startsWith("ROLE_") ? role : "ROLE_" + role));
+			}
+		}
+		return authorities;
+	}
+
+	private void writeUnauthorized(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		SecurityContextHolder.clearContext();
+		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+		String trace = firstNonBlank(
+				MDC.get(TraceIdFilter.TRACE_ID_MDC),
+				request.getHeader(TraceIdFilter.TRACE_ID_HEADER));
+		var body = new ApiErrorResponse(
+				"INVALID_OR_EXPIRED_TOKEN",
+				"Token Bearer inválido o expirado",
+				null,
+				trace);
+		objectMapper.writeValue(response.getOutputStream(), body);
 	}
 
 	private static List<String> extractRoles(Object raw) {
