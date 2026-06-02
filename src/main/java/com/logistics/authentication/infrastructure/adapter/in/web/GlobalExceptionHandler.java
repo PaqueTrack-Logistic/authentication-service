@@ -22,14 +22,7 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(AuthenticationDomainException.class)
 	public ResponseEntity<ApiErrorResponse> handleAuthDomain(AuthenticationDomainException ex) {
-		HttpStatus status = switch (ex.getErrorCode()) {
-			case "AUTH_ACCOUNT_LOCKED", "AUTH_ACCOUNT_DISABLED", "AUTH_PENDING_APPROVAL",
-					"AUTH_REGISTRATION_REJECTED" -> HttpStatus.FORBIDDEN;
-			case "AUTH_EMAIL_ALREADY_REGISTERED" -> HttpStatus.CONFLICT;
-			case "AUTH_USER_NOT_FOUND" -> HttpStatus.NOT_FOUND;
-			case "AUTH_INVALID_REGISTRATION_STATE" -> HttpStatus.BAD_REQUEST;
-			default -> HttpStatus.UNAUTHORIZED;
-		};
+		HttpStatus status = AuthenticationErrorHttpStatusMapper.forErrorCode(ex.getErrorCode());
 		return ResponseEntity
 				.status(status)
 				.body(new ApiErrorResponse(ex.getErrorCode(), ex.getMessage(), null, currentTraceId()));
