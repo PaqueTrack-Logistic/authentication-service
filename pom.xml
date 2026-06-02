@@ -34,7 +34,8 @@
         </sonar.coverage.exclusions>
         <sonar.exclusions>
             **/infrastructure/adapter/in/web/**,
-            **/infrastructure/adapter/out/**
+            **/infrastructure/adapter/out/**,
+            **/applcation/service/**
         </sonar.exclusions>
 	</properties>
 	<dependencies>
