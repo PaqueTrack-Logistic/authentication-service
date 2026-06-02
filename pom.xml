@@ -127,6 +127,20 @@
 			<version>1.5.0</version>
 			<scope>test</scope>
 		</dependency>
+
+		
+		<!-- Actuator (expone /actuator/health, /actuator/prometheus, etc.) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!-- Micrometer Prometheus (formatea las métricas para Prometheus) -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
