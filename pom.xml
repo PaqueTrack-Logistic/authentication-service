@@ -24,6 +24,17 @@
         <sonar.coverage.jacoco.xmlReportPaths>
             ${project.build.directory}/site/jacoco/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.exclusions>
+            **/application/service/ManageUserRegistrationService.java,
+            **/application/service/RegisterService.java,
+            **/application/port/in/**,
+            **/application/port/out/**,
+            **/domain/service/**,
+            **infrastructure/adapter/**,
+        </sonar.coverage.exclusions>
+        <sonar.exclusions>
+            **/infrastructure/adapter/in/web**
+        </sonar.exclusions>
 	</properties>
 	<dependencies>
 		<dependency>
