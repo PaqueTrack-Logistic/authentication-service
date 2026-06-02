@@ -30,10 +30,11 @@
             **/application/port/in/**,
             **/application/port/out/**,
             **/domain/service/**,
-            **infrastructure/adapter/**,
+            **infrastructure/adapter/**
         </sonar.coverage.exclusions>
         <sonar.exclusions>
-            **/infrastructure/adapter/in/web**
+            **/infrastructure/adapter/in/web/**,
+            **/infrastructure/adapter/out/**
         </sonar.exclusions>
 	</properties>
 	<dependencies>
